@@ -30,15 +30,7 @@ public class UIManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        /*if(startCount == true)
-        {
-            startTimer -= Time.deltaTime;
-            startTimerText.text = ((int)(startTimer)).ToString();
-            if (startTimer < 0)
-            {
-                GameManager.Instance.gameStarted = true;
-            }
-        }*/
+   
     }
 
     public void OnStartButtonClicked()
@@ -66,4 +58,5 @@ public class UIManager : MonoBehaviour
     {
         SceneManager.LoadScene(0);
     }
+
 }

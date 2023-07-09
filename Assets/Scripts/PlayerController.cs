@@ -2,9 +2,14 @@ using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SocialPlatforms.Impl;
-
+/* this class 
+ * makes player move To the nearest power up
+ * also makes player get power ups, and get hit effect by other players or other enemies  
+ * 
+ * */
 public class PlayerController : MonoBehaviour
 {
     public Rigidbody rigidBody;
@@ -56,35 +61,31 @@ public class PlayerController : MonoBehaviour
             if (Input.GetTouch(0).phase == TouchPhase.Moved)
             {
                 curTouchPosition = Input.GetTouch(0).position;
+                //get the direction Vector, between the touch start pos and current touch pos
                 Vector3 dir = (curTouchPosition - touchStartPos).normalized;
+                //add this vector to position vector of the player, this is the point that our player should look at
                 Vector3 targetPos = new Vector3(transform.position.x + dir.x, 0, transform.position.z + dir.y);
+                //look at the target position but in 0.8 seconds;
+
                 transform.DOLookAt(targetPos, 0.4f);
             }
             if (Input.GetTouch(0).phase == TouchPhase.Ended)
             {
+                //reset touch posses
                 touchStartPos = Vector3.zero;
                 curTouchPosition = Vector3.zero;
             }
         }
 
     }
-    /*
-    private void OnTriggerEnter(Collider other)
-    {
-        switch (other.transform.tag)
-        {
-            case "SpeedBoost":
-                break;
-            case "ScaleBoost":
-                GetScaleUp(other.gameObject);
-                break;
-            case "Enemy":
-                CollisionWithEnemy(other.gameObject);
-                break;
-        }
-    }
-    */
 
+    /*this function manages collision with other capsule objects
+     the collision effect has two parts;moving to the pushed position, the strenght 
+     of the push is based on score ratio between colliders
+     Also if our player get hit from back, "aka criticSpot" the ratio multiplide by a constant 
+
+     rotation and moving parts made by using DOTween functions
+     */
     public void CollisionWithEnemy(GameObject otherGameObject, bool isOnCriticHitPoint)
     {
         moveByInput = false;
@@ -122,6 +123,7 @@ public class PlayerController : MonoBehaviour
 
     public void GetScaleUp(GameObject otherGameObject)
     {
+
         otherGameObject.transform.parent = transform;
         otherGameObject.transform.DOLocalJump(Vector3.zero, 2, 1, 0.5f);
         otherGameObject.transform.DOScale(otherGameObject.transform.localScale * 0.5f, 0.5f).OnComplete(() =>
@@ -141,6 +143,7 @@ public class PlayerController : MonoBehaviour
         {
             StartCoroutine(BoostSpeedForAWhile());
             GameManager.Instance.powerUpObjectsList.Remove(otherGameObject);
+            GameManager.Instance.ControlScaleUpAmount();
             Destroy(otherGameObject);
         });
     }
@@ -159,11 +162,12 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(0.1f);
         moveByInput = true;
     }
+    //the player object turns red slowy and turns to the normal color after speed up effect finished
     public IEnumerator BoostSpeedForAWhile()
     {
         moveSpeed *= 2;
         modelMeshRenderer.material.DOKill();
-        modelMeshRenderer.material.DOColor(Color.red,0.5f);
+        modelMeshRenderer.material.DOColor(Color.red, 0.5f);
         yield return new WaitForSeconds(7);
         modelMeshRenderer.material.DOColor(originalColor, 0.5f);
         moveSpeed /= 2;

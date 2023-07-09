@@ -24,6 +24,8 @@ public class GameManager : MonoBehaviour
     public bool gameStarted = false;
     public GameObject playerObject;
     public List<GameObject> spawnPossesList;
+    public List<GameObject> powerUpSpawnPossesList;
+    //update the score everytime score changes by using get and set methods
     public int score
     {
         get
@@ -60,8 +62,10 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
         }
+        //generate level 
         SpawnEnemy();
         SpawnPowerUp();
+        //spawn speed up every 15 sec
         InvokeRepeating("SpawnSpeedUp", 0f, 15);
 
     }
@@ -69,6 +73,7 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //count time,and update timer text
         if (gameStarted == true)
         {
             timer -= Time.deltaTime;
@@ -82,15 +87,17 @@ public class GameManager : MonoBehaviour
     }
     public void SpawnPowerUp()
     {
-        int scaleUpAmount = Random.Range(8, 10);
+        //spawn and add these objects to a list
+        int scaleUpAmount = Random.Range(5, 7);
         for (int counter = 0; counter < scaleUpAmount; counter++)
         {
-            GameObject temp = Instantiate(scaleUpPrefab, GetRandomPosInArea(), scaleUpPrefab.transform.rotation);
+            GameObject temp = Instantiate(scaleUpPrefab, powerUpSpawnPossesList[counter].transform.position, scaleUpPrefab.transform.rotation);
             powerUpObjectsList.Add(temp);
         }
     }
     public void SpawnEnemy()
     {
+        //spawn and add these objects to a list
         peopleLeft = 6;
         for (int counter = 0; counter < peopleLeft; counter++)
         {
@@ -110,12 +117,15 @@ public class GameManager : MonoBehaviour
         GameObject temp = Instantiate(speedUpObjectPrefab, GetRandomPosInArea(), speedUpObjectPrefab.transform.rotation);
         powerUpObjectsList.Add(temp);
     }
+
+    //get Random position between the bounds of the game area
     public Vector3 GetRandomPosInArea()
     {
         float randomXPos = Random.Range(leftBound.transform.position.x + 1, rightBound.transform.position.x - 1);
         float randomZPos = Random.Range(topBound.transform.position.z - 1, bottomBound.transform.position.y + 1);
         return new Vector3(randomXPos, 0, randomZPos);
     }
+    //Instantiate power ups if there is no left 
     public void ControlScaleUpAmount()
     {
         if (powerUpObjectsList.Count == 0)
@@ -123,18 +133,18 @@ public class GameManager : MonoBehaviour
             SpawnPowerUp();
         }
     }
+
     public void GameWin()
     {
+        gameStarted = false;
         UIScript.InGameScreen.SetActive(false);
         UIScript.winScreen.SetActive(true); 
     }
     public void GameLose()
     {
+        gameStarted = false;
         UIScript.InGameScreen.SetActive(false);
         UIScript.loseScreen.SetActive(true);
     }
-    public void OnNextOrAgainButtonClicked()
-    {
-        SceneManager.LoadScene(0);
-    }
+   
 }

@@ -16,6 +16,10 @@ public class PlayerTriggerManager : MonoBehaviour
     {
         
     }
+    /*
+     The main player script is in the parent. To work with capsule collider properly, and also to manage scale up effects
+     this trigger scripts detect the trigger scenerios and calss the right func for the occasion
+     */
     private void OnTriggerEnter(Collider other)
     {
         switch (other.transform.tag)

@@ -3,7 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-
+/* this class 
+ * makes enemy move To the nearest power up
+ * also makes enemy get power ups, and get hit effect by other players or other enemies  
+ * 
+ * */
 public class EnemyController : MonoBehaviour
 {
     public Rigidbody rigidBody;
@@ -17,10 +21,11 @@ public class EnemyController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //Look for a new target every one second
         InvokeRepeating("UpdateTarget", 0f, 1f);
     }
 
-    // Update is called once per frame
+    // this func decleares a new target to the enemy to go towards, target selection is based on distance
     public void UpdateTarget()
     {
         float minDistance = 10000;
@@ -35,18 +40,23 @@ public class EnemyController : MonoBehaviour
         }
         if (targetObject != null)
         {
+            //get the direction Vector between target and enemy
             Vector3 dir = (targetObject.transform.position - transform.position).normalized;
+            //add this vector to position vector of the enemy, this is the point that our enemy should look at
             Vector3 targetPos = new Vector3(transform.position.x + dir.x, 0, transform.position.z + dir.z);
+            //look at the target position but in 0.8 seconds;
             transform.DOLookAt(targetPos, 0.8f);
         }
         else
         {
+            //if there is no targets left, go to the middle of the environment
             transform.DOLookAt(Vector3.zero, 0.8F);
         }
     }
 
     private void Update()
     {
+        //start moving after game start
         if (GameManager.Instance.gameStarted == true)
         {
             MoveObjectForward();
@@ -54,7 +64,8 @@ public class EnemyController : MonoBehaviour
     }
     private void MoveObjectForward()
     {
-
+        //make enemy move forward by changing the velocity through rigidbody element of it
+        //by using move parameter, I disabled forward movement if there is a collision
         if (move)
         {
             rigidBody.velocity = transform.forward * 1 * moveSpeed;
@@ -64,38 +75,53 @@ public class EnemyController : MonoBehaviour
             rigidBody.velocity = Vector3.zero;
         }
     }
-
+    
     private void OnTriggerEnter(Collider other)
     {
         switch (other.transform.tag)
         {
             case "SpeedBoost":
+                //make enemy speed up
                 GetSpeedUp(other.gameObject);
                 break;
             case "ScaleBoost":
+                //make enemy speed up
                 GetScaleUp(other.gameObject);
                 break;
             case "Enemy":
+                //collision with enemy
                 CollisionWithEnemyOrPlayer(other.gameObject, false);
                 break;
             case "Player":
+                //collision with player
                 CollisionWithEnemyOrPlayer(other.gameObject, false);
                 break;
             case "Border":
+                //if goes outside of the area
                 FallDown();
                 break;
         }
 
     }
+    //this func enables forward movements after collision effect completed
     public IEnumerator KeepOnMovingAfterHit()
     {
+
         yield return new WaitForSeconds(0.1f);
         UpdateTarget();
         move = true;
     }
 
+    /*this function manages collision with other capsule objects
+     the collision effect has two parts;moving to the pushed position, the strenght 
+     of the push is based on score ratio between colliders
+     Also if our enemy get hit from back, "aka criticSpot" the ratio multiplide by a constant 
+
+     rotation and moving parts made by using DOTween functions
+     */
     public void CollisionWithEnemyOrPlayer(GameObject otherGameObject, bool isOnCriticHitPoint)
     {
+        
         float opponentScore;
         if (otherGameObject.GetComponent<EnemyController>() != null)//it is a Enemy
         {
@@ -136,6 +162,9 @@ public class EnemyController : MonoBehaviour
             StartCoroutine(KeepOnMovingAfterHit());
         });
     }
+
+    /*make scaleUpObject a little animation and scale up enemy object at the end of it 
+     */
     public void GetScaleUp(GameObject otherGameObject)
     {
         otherGameObject.transform.parent = transform;
@@ -149,7 +178,7 @@ public class EnemyController : MonoBehaviour
             Destroy(otherGameObject);
         });
     }
-
+    //go down and control if game is ended or not
     public void FallDown()
     {
         rigidBody.isKinematic = true;
@@ -161,6 +190,11 @@ public class EnemyController : MonoBehaviour
             Destroy(gameObject);
         });
     }
+
+    /*
+     
+     make speed up object a little animation and speed up enemy for a while 
+     */
     public void GetSpeedUp(GameObject otherGameObject)
     {
         otherGameObject.transform.parent = transform;
@@ -169,6 +203,7 @@ public class EnemyController : MonoBehaviour
         {
             StartCoroutine(BoostSpeedForAWhile());
             GameManager.Instance.powerUpObjectsList.Remove(otherGameObject);
+            GameManager.Instance.ControlScaleUpAmount();
             Destroy(otherGameObject);
         });
     }

@@ -18,13 +18,9 @@ public class EnemyCriticPosTrigger : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Enemy"))
+        if (other.CompareTag("Enemy")|| other.CompareTag("Player"))
         {
             enemyScript.CollisionWithEnemyOrPlayer(other.gameObject,true);
-        }
-        if (other.CompareTag("Player"))
-        {
-            enemyScript.CollisionWithEnemyOrPlayer(other.gameObject, true);
         }
     }
 }
