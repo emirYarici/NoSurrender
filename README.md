@@ -1,5 +1,5 @@
 # NoSurrender
-TestCaese
+TestCase
 
 GamePlay
 https://www.youtube.com/watch?v=Lh0iM44e8gk
